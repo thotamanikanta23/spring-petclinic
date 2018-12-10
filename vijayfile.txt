@@ -1,0 +1,84 @@
+Jenkinsfile for full pipeline
+
+pipeline {
+   agent any 
+   stages {
+       stage('validate') {
+           steps {
+            echo 'validating maven spring hibernate application'
+            git 'https://github.com/vijaymargam/spring-hibernate-maven-webapp.git'
+            withMaven(jdk: 'java', maven: 'maven', mavenLocalRepo: '.m2') {                             #withMaven will discover the generated maven artifacts, Junit surefile & failsafe and find bugs reports.
+                sh "mvn validate"
+                }
+           }
+       }
+       stage('test') {
+           steps {
+           echo 'testing maven spring hibernate application'
+           git 'https://github.com/vijaymargam/spring-hibernate-maven-webapp.git'
+           withMaven(maven: 'maven', mavenLocalRepo: '.m2') {
+            sh "mvn test"
+            }
+            junit '**/surefire-reports/*.xml'
+            }
+       } 
+       stage('coverage') {
+          steps {
+            echo 'checking code coverage for maven spring hibernate application'
+            git 'https://github.com/vijaymargam/spring-hibernate-maven-webapp.git'
+           withMaven(maven: 'maven', mavenLocalRepo: '.m2') {
+            sh "mvn cobertura:cobertura -Dcobertura.report.format=xml"
+            cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/cobertura/*.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+       }
+       }
+       }
+       stage('documentation') {
+           steps {
+            echo 'validating maven spring hibernate application'
+            git 'https://github.com/vijaymargam/spring-hibernate-maven-webapp.git'
+            withMaven(jdk: 'java', maven: 'maven', mavenLocalRepo: '.m2') {
+                sh "mvn javadoc:javadoc"
+                }
+            step([$class: 'JavadocArchiver', javadocDir: '/var/jenkins_home/workspace/zml.maven.pipeline.1/target/site/apidocs/', keepAll: false])
+           }
+       }
+
+        stage('analysis') {
+        steps {
+        echo 'analysing code for maven spring hibernate application'
+        git 'https://github.com/vijaymargam/spring-hibernate-maven-webapp.git'
+        withSonarQubeEnv('sonarqube') {
+        withMaven(maven: 'maven', mavenLocalRepo: '.m2') {
+            sh "mvn clean test sonar:sonar"
+            }
+        }
+        }
+        }
+        stage('package') {
+            steps {
+            echo 'packing or building maven spring hibernate application'
+            git 'https://github.com/vijaymargam/spring-hibernate-maven-webapp.git'
+           withMaven(maven: 'maven', mavenLocalRepo: '.m2') {
+            sh "mvn package"
+            }
+            }
+        }
+        //stage('deploy.to.tomcat'){
+
+        //}
+
+        stage('deploy.to.nexus') {
+          steps {
+            echo 'packing or building maven spring hibernate application'
+            git 'https://github.com/vijaymargam/spring-hibernate-maven-webapp.git'
+           withMaven(maven: 'maven', mavenLocalRepo: '.m2') {
+            sh "mvn package"
+            }
+            sh 'ls /var/jenkins_home/workspace/zml.maven.pipeline.1/target/'
+            nexusPublisher nexusInstanceId: 'nexus_1', nexusRepositoryId: 'maven_release', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '/var/jenkins_home/workspace/zml.maven.pipeline.1/target/SpringHibernateExample-1.0.war']], mavenCoordinate: [artifactId: 'SpringHibernateExample', groupId: 'com.websystique.springmvc', packaging: 'war', version: '1.0']]]
+
+          }
+        }
+  }
+}
+
