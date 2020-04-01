@@ -5,8 +5,8 @@ pipeline {
     stage('Clone repository') {
       steps {
         checkout scm
-        sh 'echo $MYJOB'
-        sh 'echo $PERSON'
+        bat 'echo $MYJOB'
+        bat 'echo $PERSON'
       }
     }
 }
