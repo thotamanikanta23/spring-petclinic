@@ -3,4 +3,4 @@ ADD . /kishan
 WORKDIR /kishan
 RUN mvn package
 VOLUME ["/kishan"]
-ENTRYPOINT ["java", "-jar", "spring-petclinic-2.0.0.BUILD-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "target/spring-petclinic-2.0.0.BUILD-SNAPSHOT.jar"]
