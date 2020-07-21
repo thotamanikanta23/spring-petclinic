@@ -1,0 +1,14 @@
+//sample1
+pipeline {
+  agent any
+  
+  stages {
+    stage('Clone repository') {
+      steps {
+        checkout scm
+        bat 'echo $MYJOB'
+        bat 'echo $PERSON'
+      }
+    }
+}
+}
