@@ -1,13 +1,11 @@
-FROM maven:3.6.3-jdk-11-slim
+FROM openjdk:8
 
-MAINTAINER kishan <kishan@gmail.com>
+MAINTAINER manikanta <manikanta@gmail.com>
 
-ADD . /kishan
+VOLUME /tmp
 
-WORKDIR /kishan
+WORKDIR /var/lib/jenkins/workspace/ci-cd-docker/
 
-RUN mvn package
+COPY target/spring-petclinic-2.1.0.BUILD-SNAPSHOT.jar petclinic.jar
 
-VOLUME ["/kishan"]
-
-ENTRYPOINT ["java", "-jar", "/kishan/target/spring-petclinic-2.1.0.BUILD-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","petclinic.jar"]
